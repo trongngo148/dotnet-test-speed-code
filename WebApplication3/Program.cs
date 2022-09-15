@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using BenchmarkDotNet.Diagnosers;
+using System.Runtime.InteropServices;
 
 namespace WebApplication3
 {
@@ -82,14 +84,54 @@ namespace WebApplication3
             }
         }
 
+        public class Test2
+        {
+            public List<int> TestList { get; set; }
+            public Test2()
+            {
+                TestList = new List<int>() {1, 2, 3, 4, 5, 6, 7, 8, 9};
+            }
+
+            [Benchmark]
+            public void RunSumLinq()
+            {
+                var a = TestList.Sum(tl => tl);
+            }
+
+            [Benchmark]
+            public void RunSumForeach()
+            {
+                var sum = 0;
+                foreach (var item in  TestList)
+                {
+                    sum += item;
+                }
+                
+            } 
+            
+            [Benchmark]
+            public void RunSumForeachArr()
+            {
+                var sum = 0;
+                foreach (var item in  TestList.ToArray())
+                {
+                    sum += item;
+                }
+                
+            } 
+            
+        }
+
         public static void Main(string[] args)
         {
              var config = new ManualConfig()
+                            .AddDiagnoser(MemoryDiagnoser.Default)
                             .WithOptions(ConfigOptions.DisableOptimizationsValidator)
                             .AddValidator(JitOptimizationsValidator.DontFailOnError)
                             .AddLogger(ConsoleLogger.Default)
                             .AddColumnProvider(DefaultColumnProviders.Instance);
-            BenchmarkRunner.Run<TestSpeedOfDictionary>(config);        
+            // BenchmarkRunner.Run<TestSpeedOfDictionary>(config);        
+            BenchmarkRunner.Run<Test2>(config);
         }
     }
 }
